@@ -1,70 +1,56 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
+
 <head>
-  <title>Modelo de clasificación de moda</title>
-  <style>
-    #canvas {
-      border: 1px solid black;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <title>Imagenes</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <canvas id="canvas" width="280" height="280"></canvas>
-  <button onclick="predecir()">Hacer predicción</button>
-  <div id="resultado"></div>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.8.0"></script>
-  <script>
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-    var isDrawing = false;
-    
-    var resultadoDiv = document.getElementById('resultado');
+  <main>
+    <div class="px-4 py-2 my-2 text-center border-bottom">
+      <h1 class="display-5 fw-bold">Clasificador de imagenes de ropa</h1>
+    </div>
 
-    canvas.addEventListener('mousedown', function(e) {
-      isDrawing = true;
-      draw(e.clientX, e.clientY);
-    });
+    <div class="b-example-divider"></div>
 
-    canvas.addEventListener('mousemove', function(e) {
-      if (isDrawing) {
-        draw(e.clientX, e.clientY);
-      }
-    });
+    <div class="container mt-5">
+      <div class="row">
+        <div class="col-12 col-md-4 offset-md-4">
+          <div id="canvas-container">
+            <div><i>Dibuja una prenda grande y centrada para tener una mejor predicci&oacute;n</i></div>
+            <canvas id="bigcanvas" width="200" height="200"></canvas>
+            <canvas id="smallcanvas" width="28" height="28" style="display: none"></canvas>
+          </div>
+          <div class="text-center mt-3">
+            <button class="btn btn-primary" id="limpiar" onclick="limpiar()">Limpiar</button>
+            <button class="btn btn-success" id="predecir" onclick="predecir()">Predecir</button>
+            <div id="resultado"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="b-example-divider"></div>
+    <div class="b-example-divider mb-0"></div>
+  </main>
 
-    canvas.addEventListener('mouseup', function(e) {
-      isDrawing = false;
-    });
-
-    function draw(x, y) {
-      ctx.fillStyle = 'black';
-      ctx.fillRect(x, y, 10, 10);
-    }
-
-    async function predecir() {
-      var imageData = canvas.toDataURL();
-      var image = new Image();
-      image.src = imageData;
-      await image.decode();
-
-      var tensorImage = tf.browser.fromPixels(image).toFloat();
-      tensorImage = tf.image.resizeBilinear(tensorImage, [28, 28]);
-      tensorImage = tensorImage.mean(2, true); // Convertir a escala de grises
-      tensorImage = tensorImage.expandDims();
-
-      const modelo = await tf.loadLayersModel('model.json');
-      const prediccion = modelo.predict(tensorImage);
-      const etiquetaPrediccion = prediccion.indexOf(Math.max.apply(null, prediccion));
-
-      console.log(prediccion)
-      console.log(etiquetaPrediccion)
-
-      const clases = ['Camiseta/top', 'Pantalón', 'Sudadera', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Tenis', 'Bolso', 'Bota tobillera'];
-      resultadoDiv.innerHTML = 'Predicción: ' + clases[etiquetaPrediccion];
-    }
-
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+  <script src="fabric.min.js"></script>
+  <script src="drawing.js"></script>
+
+  <script src="index.js" type="text/javascript"></script>
 </body>
+
 </html>
