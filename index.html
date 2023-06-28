@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Modelo de clasificación de moda</title>
+  <style>
+    #canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="280" height="280"></canvas>
+  <button onclick="predecir()">Hacer predicción</button>
+  <div id="resultado"></div>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.8.0"></script>
+  <script>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var isDrawing = false;
+    
+    var resultadoDiv = document.getElementById('resultado');
+
+    canvas.addEventListener('mousedown', function(e) {
+      isDrawing = true;
+      draw(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener('mousemove', function(e) {
+      if (isDrawing) {
+        draw(e.clientX, e.clientY);
+      }
+    });
+
+    canvas.addEventListener('mouseup', function(e) {
+      isDrawing = false;
+    });
+
+    function draw(x, y) {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(x, y, 10, 10);
+    }
+
+    async function predecir() {
+      var imageData = canvas.toDataURL();
+      var image = new Image();
+      image.src = imageData;
+      await image.decode();
+
+      var tensorImage = tf.browser.fromPixels(image).toFloat();
+      tensorImage = tf.image.resizeBilinear(tensorImage, [28, 28]);
+      tensorImage = tensorImage.mean(2, true); // Convertir a escala de grises
+      tensorImage = tensorImage.expandDims();
+
+      const modelo = await tf.loadLayersModel('model.json');
+      const prediccion = modelo.predict(tensorImage);
+      const etiquetaPrediccion = prediccion.indexOf(Math.max.apply(null, prediccion));
+
+      console.log(prediccion)
+      console.log(etiquetaPrediccion)
+
+      const clases = ['Camiseta/top', 'Pantalón', 'Sudadera', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Tenis', 'Bolso', 'Bota tobillera'];
+      resultadoDiv.innerHTML = 'Predicción: ' + clases[etiquetaPrediccion];
+    }
+
+
+  </script>
+</body>
+</html>
